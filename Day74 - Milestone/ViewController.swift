@@ -9,13 +9,23 @@ import UIKit
 
 class ViewController: UITableViewController {
 
-    var notes = [String]()
+    var notes = [Note]()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
-        notes.append("Test")
-        notes.append("note")
+
+        let defaults = UserDefaults.standard
+
+        if let savedNotes = defaults.object(forKey: "notes") as? Data {
+            let jsonDecoder = JSONDecoder()
+
+            do {
+                notes = try jsonDecoder.decode([Note].self, from: savedNotes)
+            } catch {
+                print("Failed to load people")
+            }
+        }
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -25,7 +35,7 @@ class ViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let singleNote = notes[indexPath.row]
         let cell = tableView.dequeueReusableCell(withIdentifier: "Note", for: indexPath)
-        cell.textLabel?.text = singleNote
+        cell.textLabel?.text = singleNote.noteText
         return cell
     }
     
@@ -33,7 +43,7 @@ class ViewController: UITableViewController {
         
         if let vc = storyboard?.instantiateViewController(withIdentifier: "Detail") as? DetailViewController {
             
-            vc.selectedNote = notes[indexPath.row]
+            vc.selectedNote = notes[indexPath.row].noteText
 
             navigationController?.pushViewController(vc, animated: true)
         }
